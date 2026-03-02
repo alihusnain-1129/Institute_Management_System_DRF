@@ -1,0 +1,1190 @@
+Complete API Testing Guide for Institute Management System
+1. Environment Setup
+Base URL
+text
+http://localhost:8000/api
+Postman Environment Variables
+Create these variables in Postman:
+
+base_url: http://localhost:8000/api
+
+access_token: (to be filled after login)
+
+refresh_token: (to be filled after login)
+
+institute_id: (to be filled after institute creation)
+
+student_id: (to be filled after student creation)
+
+teacher_id: (to be filled after teacher creation)
+
+course_id: (to be filled after course creation)
+
+exam_id: (to be filled after exam creation)
+
+result_id: (to be filled after result creation)
+
+2. Authentication APIs
+2.1 Register Institute Admin
+Endpoint: POST {{base_url}}/auth/register/
+
+Headers:
+
+text
+Content-Type: application/json
+Body:
+
+json
+{
+    "username": "institute_admin1",
+    "email": "admin1@institute.com",
+    "password": "Institute@123",
+    "first_name": "John",
+    "last_name": "Doe",
+    "role": "institute_admin",
+    "phone": "1234567890",
+    "institute_name": "Oxford Institute"
+}
+Expected Response (201 Created):
+
+json
+{
+    "message": "Institute registration successful. Awaiting super admin approval.",
+    "user": {
+        "id": 2,
+        "username": "institute_admin1",
+        "email": "admin1@institute.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "role": "institute_admin",
+        "phone": "1234567890",
+        "is_approved": false,
+        "institute": 1,
+        "institute_name": "Oxford Institute"
+    }
+}
+2.2 Register Another Institute Admin
+json
+{
+    "username": "institute_admin2",
+    "email": "admin2@college.com",
+    "password": "Institute@123",
+    "first_name": "Sarah",
+    "last_name": "Wilson",
+    "role": "institute_admin",
+    "phone": "0987654321",
+    "institute_name": "Cambridge College"
+}
+2.3 Super Admin Login
+Endpoint: POST {{base_url}}/auth/login/
+
+Body:
+
+json
+{
+    "username": "superadmin",
+    "password": "Admin@123"
+}
+Expected Response (200 OK):
+
+json
+{
+    "access": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+    "user": {
+        "id": 1,
+        "username": "superadmin",
+        "email": "super@admin.com",
+        "first_name": "",
+        "last_name": "",
+        "role": "super_admin",
+        "phone": "",
+        "is_approved": true,
+        "institute": null,
+        "institute_name": null
+    }
+}
+Postman Action: Copy access_token to environment variable
+
+2.4 View Pending Approvals (Super Admin)
+Endpoint: GET {{base_url}}/auth/pending-approvals/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Expected Response (200 OK):
+
+json
+[
+    {
+        "id": 2,
+        "username": "institute_admin1",
+        "email": "admin1@institute.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "role": "institute_admin",
+        "phone": "1234567890",
+        "is_approved": false,
+        "institute": 1,
+        "institute_name": "Oxford Institute"
+    },
+    {
+        "id": 3,
+        "username": "institute_admin2",
+        "email": "admin2@college.com",
+        "first_name": "Sarah",
+        "last_name": "Wilson",
+        "role": "institute_admin",
+        "phone": "0987654321",
+        "is_approved": false,
+        "institute": 2,
+        "institute_name": "Cambridge College"
+    }
+]
+2.5 Approve Institute Admin (Super Admin)
+Endpoint: POST {{base_url}}/auth/approve-user/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+Body (Approve first institute):
+
+json
+{
+    "user_id": 2,
+    "approve": true
+}
+Expected Response (200 OK):
+
+json
+{
+    "message": "User approved successfully"
+}
+Body (Approve second institute):
+
+json
+{
+    "user_id": 3,
+    "approve": true
+}
+2.6 Institute Admin Login
+Endpoint: POST {{base_url}}/auth/login/
+
+Body:
+
+json
+{
+    "username": "institute_admin1",
+    "password": "Institute@123"
+}
+Expected Response (200 OK):
+
+json
+{
+    "access": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+    "user": {
+        "id": 2,
+        "username": "institute_admin1",
+        "email": "admin1@institute.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "role": "institute_admin",
+        "phone": "1234567890",
+        "is_approved": true,
+        "institute": 1,
+        "institute_name": "Oxford Institute"
+    }
+}
+Postman Action: Update access_token with new token
+
+2.7 Token Refresh
+Endpoint: POST {{base_url}}/auth/token/refresh/
+
+Headers:
+
+text
+Content-Type: application/json
+Body:
+
+json
+{
+    "refresh": "{{refresh_token}}"
+}
+Expected Response (200 OK):
+
+json
+{
+    "access": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+}
+3. Institute APIs
+3.1 Get Institute Details (Institute Admin)
+Endpoint: GET {{base_url}}/institutes/{{institute_id}}/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Expected Response (200 OK):
+
+json
+{
+    "id": 1,
+    "name": "Oxford Institute",
+    "address": "",
+    "phone": "",
+    "email": "",
+    "website": "",
+    "is_approved": true,
+    "created_at": "2026-03-02T10:30:00Z",
+    "updated_at": "2026-03-02T10:30:00Z"
+}
+3.2 Update Institute Details
+Endpoint: PUT {{base_url}}/institutes/{{institute_id}}/update/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+Body:
+
+json
+{
+    "address": "123 Education Street, Oxford, UK",
+    "phone": "+44 1865 123456",
+    "email": "contact@oxford.edu",
+    "website": "https://www.oxford.edu"
+}
+Expected Response (200 OK):
+
+json
+{
+    "id": 1,
+    "name": "Oxford Institute",
+    "address": "123 Education Street, Oxford, UK",
+    "phone": "+44 1865 123456",
+    "email": "contact@oxford.edu",
+    "website": "https://www.oxford.edu",
+    "is_approved": true,
+    "created_at": "2026-03-02T10:30:00Z",
+    "updated_at": "2026-03-02T11:15:00Z"
+}
+4. Student APIs
+4.1 Create Student
+Endpoint: POST {{base_url}}/students/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+Body (Student 1):
+
+json
+{
+    "username": "student_alice",
+    "password": "Student@123",
+    "email": "alice@student.com",
+    "first_name": "Alice",
+    "last_name": "Johnson",
+    "phone": "5551234567",
+    "roll_number": "2024001",
+    "date_of_birth": "2005-05-15",
+    "address": "456 Student Lane, Oxford",
+    "parent_name": "Robert Johnson",
+    "parent_phone": "5559876543"
+}
+Expected Response (201 Created):
+
+json
+{
+    "message": "Student created successfully",
+    "student": {
+        "id": 1,
+        "user": {
+            "id": 4,
+            "username": "student_alice",
+            "email": "alice@student.com",
+            "first_name": "Alice",
+            "last_name": "Johnson",
+            "role": "student",
+            "phone": "5551234567",
+            "is_approved": true,
+            "institute": 1,
+            "institute_name": "Oxford Institute"
+        },
+        "roll_number": "2024001",
+        "enrollment_date": "2026-03-02",
+        "date_of_birth": "2005-05-15",
+        "address": "456 Student Lane, Oxford",
+        "parent_name": "Robert Johnson",
+        "parent_phone": "5559876543",
+        "institute": 1
+    }
+}
+Postman Action: Save student_id = 1
+
+4.2 Create More Students
+Body (Student 2):
+
+json
+{
+    "username": "student_bob",
+    "password": "Student@123",
+    "email": "bob@student.com",
+    "first_name": "Bob",
+    "last_name": "Williams",
+    "phone": "5552223333",
+    "roll_number": "2024002",
+    "date_of_birth": "2005-08-20",
+    "address": "789 College Road, Oxford",
+    "parent_name": "Mary Williams",
+    "parent_phone": "5554445555"
+}
+Body (Student 3):
+
+json
+{
+    "username": "student_charlie",
+    "password": "Student@123",
+    "email": "charlie@student.com",
+    "first_name": "Charlie",
+    "last_name": "Brown",
+    "phone": "5556667777",
+    "roll_number": "2024003",
+    "date_of_birth": "2005-03-10",
+    "address": "321 School Street, Oxford",
+    "parent_name": "Lucy Brown",
+    "parent_phone": "5558889999"
+}
+4.3 List All Students
+Endpoint: GET {{base_url}}/students/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Expected Response (200 OK):
+
+json
+{
+    "count": 3,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "id": 1,
+            "roll_number": "2024001",
+            "user": {
+                "id": 4,
+                "username": "student_alice",
+                "email": "alice@student.com",
+                "first_name": "Alice",
+                "last_name": "Johnson",
+                "role": "student",
+                "phone": "5551234567",
+                "is_approved": true,
+                "institute": 1,
+                "institute_name": "Oxford Institute"
+            },
+            "enrollment_date": "2026-03-02",
+            "institute": 1,
+            "institute_name": "Oxford Institute"
+        },
+        {
+            "id": 2,
+            "roll_number": "2024002",
+            "user": {
+                "id": 5,
+                "username": "student_bob",
+                "email": "bob@student.com",
+                "first_name": "Bob",
+                "last_name": "Williams",
+                "role": "student",
+                "phone": "5552223333",
+                "is_approved": true,
+                "institute": 1,
+                "institute_name": "Oxford Institute"
+            },
+            "enrollment_date": "2026-03-02",
+            "institute": 1,
+            "institute_name": "Oxford Institute"
+        },
+        {
+            "id": 3,
+            "roll_number": "2024003",
+            "user": {
+                "id": 6,
+                "username": "student_charlie",
+                "email": "charlie@student.com",
+                "first_name": "Charlie",
+                "last_name": "Brown",
+                "role": "student",
+                "phone": "5556667777",
+                "is_approved": true,
+                "institute": 1,
+                "institute_name": "Oxford Institute"
+            },
+            "enrollment_date": "2026-03-02",
+            "institute": 1,
+            "institute_name": "Oxford Institute"
+        }
+    ]
+}
+4.4 Filter Students
+bash
+# Search by name
+GET {{base_url}}/students/?search=Alice
+
+# Search by roll number
+GET {{base_url}}/students/?search=2024001
+
+# Filter by enrollment date
+GET {{base_url}}/students/?enrollment_date=2026-03-02
+
+# Order by roll number (descending)
+GET {{base_url}}/students/?ordering=-roll_number
+
+# Pagination
+GET {{base_url}}/students/?page=1&page_size=2
+4.5 Get Student Details
+Endpoint: GET {{base_url}}/students/1/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+4.6 Update Student (Partial Update)
+Endpoint: PUT {{base_url}}/students/1/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+Body:
+
+json
+{
+    "address": "Updated Address, New Location, Oxford",
+    "parent_phone": "5557778888",
+    "phone": "5559990000"
+}
+Expected Response (200 OK):
+
+json
+{
+    "message": "Student updated successfully",
+    "student": {
+        "id": 1,
+        "roll_number": "2024001",
+        "user": {
+            "id": 4,
+            "username": "student_alice",
+            "email": "alice@student.com",
+            "first_name": "Alice",
+            "last_name": "Johnson",
+            "role": "student",
+            "phone": "5559990000",
+            "is_approved": true,
+            "institute": 1,
+            "institute_name": "Oxford Institute"
+        },
+        "enrollment_date": "2026-03-02",
+        "institute": 1,
+        "institute_name": "Oxford Institute"
+    }
+}
+4.7 Try to Update Roll Number (Should Fail)
+Endpoint: PUT {{base_url}}/students/1/
+
+Body:
+
+json
+{
+    "roll_number": "2024005"
+}
+Expected Response (400 Bad Request):
+
+json
+{
+    "roll_number": [
+        "Roll number cannot be changed after creation"
+    ]
+}
+4.8 Delete Student
+Endpoint: DELETE {{base_url}}/students/3/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Expected Response (200 OK):
+
+json
+{
+    "message": "Student student_charlie (ID: 3) deleted successfully",
+    "deleted_student_id": 3,
+    "deleted_username": "student_charlie"
+}
+4.9 Verify Deletion
+Endpoint: GET {{base_url}}/students/3/
+
+Expected Response (404 Not Found):
+
+json
+{
+    "detail": "Not found."
+}
+5. Teacher APIs
+5.1 Create Teacher
+Endpoint: POST {{base_url}}/teachers/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+Body (Teacher 1):
+
+json
+{
+    "username": "teacher_jane",
+    "password": "Teacher@123",
+    "email": "jane.smith@institute.com",
+    "first_name": "Jane",
+    "last_name": "Smith",
+    "phone": "9876543210",
+    "employee_id": "TCH001",
+    "department": "Computer Science",
+    "qualification": "M.Tech in Computer Science",
+    "specialization": "Artificial Intelligence",
+    "address": "123 Teacher Street, Oxford",
+    "emergency_contact": "9998887776"
+}
+Expected Response (201 Created):
+
+json
+{
+    "message": "Teacher created successfully",
+    "teacher": {
+        "id": 1,
+        "user": {
+            "id": 7,
+            "username": "teacher_jane",
+            "email": "jane.smith@institute.com",
+            "first_name": "Jane",
+            "last_name": "Smith",
+            "role": "teacher",
+            "phone": "9876543210",
+            "is_approved": true,
+            "institute": 1,
+            "institute_name": "Oxford Institute"
+        },
+        "employee_id": "TCH001",
+        "department": "Computer Science",
+        "qualification": "M.Tech in Computer Science",
+        "joining_date": "2026-03-02",
+        "specialization": "Artificial Intelligence",
+        "address": "123 Teacher Street, Oxford",
+        "emergency_contact": "9998887776",
+        "institute": 1
+    }
+}
+Postman Action: Save teacher_id = 1
+
+5.2 Create More Teachers
+Body (Teacher 2):
+
+json
+{
+    "username": "teacher_john",
+    "password": "Teacher@123",
+    "email": "john.doe@institute.com",
+    "first_name": "John",
+    "last_name": "Doe",
+    "phone": "9876543211",
+    "employee_id": "TCH002",
+    "department": "Mathematics",
+    "qualification": "M.Sc in Mathematics",
+    "specialization": "Calculus",
+    "address": "456 Teacher Avenue, Oxford",
+    "emergency_contact": "9998887775"
+}
+Body (Teacher 3):
+
+json
+{
+    "username": "teacher_robert",
+    "password": "Teacher@123",
+    "email": "robert.brown@institute.com",
+    "first_name": "Robert",
+    "last_name": "Brown",
+    "phone": "9876543212",
+    "employee_id": "TCH003",
+    "department": "Physics",
+    "qualification": "M.Sc in Physics",
+    "specialization": "Quantum Mechanics",
+    "address": "789 Science Road, Oxford",
+    "emergency_contact": "9998887774"
+}
+5.3 List All Teachers
+Endpoint: GET {{base_url}}/teachers/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+5.4 Filter Teachers
+bash
+# Filter by department
+GET {{base_url}}/teachers/?department=Computer Science
+
+# Search by name
+GET {{base_url}}/teachers/?search=jane
+
+# Search by employee_id
+GET {{base_url}}/teachers/?search=TCH001
+
+# Order by joining date
+GET {{base_url}}/teachers/?ordering=-joining_date
+5.5 Get Teacher Details
+Endpoint: GET {{base_url}}/teachers/1/
+
+5.6 Update Teacher
+Endpoint: PUT {{base_url}}/teachers/1/
+
+Body:
+
+json
+{
+    "department": "Data Science",
+    "specialization": "Machine Learning",
+    "phone": "9888888888"
+}
+5.7 Delete Teacher
+Endpoint: DELETE {{base_url}}/teachers/3/
+
+Expected Response:
+
+json
+{
+    "message": "Teacher teacher_robert (Employee ID: TCH003) deleted successfully",
+    "deleted_teacher_id": 3,
+    "deleted_employee_id": "TCH003",
+    "deleted_username": "teacher_robert"
+}
+6. Course APIs
+6.1 Create Course
+Endpoint: POST {{base_url}}/courses/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+Body (Course 1 - with teacher):
+
+json
+{
+    "course_code": "CS101",
+    "name": "Introduction to Computer Science",
+    "description": "Basic concepts of programming and computer science",
+    "credits": 4,
+    "teacher": 1
+}
+Expected Response (201 Created):
+
+json
+{
+    "id": 1,
+    "course_code": "CS101",
+    "name": "Introduction to Computer Science",
+    "description": "Basic concepts of programming and computer science",
+    "credits": 4,
+    "teacher": 1,
+    "teacher_details": {
+        "id": 1,
+        "employee_id": "TCH001",
+        "user": {
+            "id": 7,
+            "username": "teacher_jane",
+            "email": "jane.smith@institute.com",
+            "first_name": "Jane",
+            "last_name": "Smith",
+            "role": "teacher",
+            "phone": "9876543210",
+            "is_approved": true,
+            "institute": 1,
+            "institute_name": "Oxford Institute"
+        },
+        "department": "Computer Science",
+        "qualification": "M.Tech in Computer Science",
+        "joining_date": "2026-03-02",
+        "institute": 1,
+        "institute_name": "Oxford Institute"
+    },
+    "institute": 1,
+    "created_at": "2026-03-02T12:00:00Z",
+    "updated_at": "2026-03-02T12:00:00Z"
+}
+Postman Action: Save course_id = 1
+
+6.2 Create More Courses
+Body (Course 2 - without teacher):
+
+json
+{
+    "course_code": "MATH201",
+    "name": "Advanced Mathematics",
+    "description": "Calculus and Linear Algebra",
+    "credits": 3,
+    "teacher": null
+}
+Body (Course 3):
+
+json
+{
+    "course_code": "PHY101",
+    "name": "Physics Fundamentals",
+    "description": "Mechanics and Thermodynamics",
+    "credits": 3,
+    "teacher": 2
+}
+6.3 List All Courses
+Endpoint: GET {{base_url}}/courses/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+6.4 Filter Courses
+bash
+# Filter by credits
+GET {{base_url}}/courses/?credits=3
+
+# Filter by teacher
+GET {{base_url}}/courses/?teacher=1
+
+# Search by course name
+GET {{base_url}}/courses/?search=computer
+
+# Search by course code
+GET {{base_url}}/courses/?search=CS101
+6.5 Get Course Details
+Endpoint: GET {{base_url}}/courses/1/
+
+6.6 Update Course
+Endpoint: PUT {{base_url}}/courses/1/
+
+Body:
+
+json
+{
+    "description": "Updated description with more details",
+    "credits": 3
+}
+6.7 Enroll Students in Courses
+Endpoint: POST {{base_url}}/courses/enrollments/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+Body (Enroll Alice in CS101):
+
+json
+{
+    "student": 1,
+    "course": 1
+}
+Expected Response (201 Created):
+
+json
+{
+    "id": 1,
+    "student": 1,
+    "course": 1,
+    "enrollment_date": "2026-03-02T12:30:00Z",
+    "student_details": {
+        "id": 1,
+        "roll_number": "2024001",
+        "user": {
+            "id": 4,
+            "username": "student_alice",
+            "email": "alice@student.com",
+            "first_name": "Alice",
+            "last_name": "Johnson",
+            "role": "student",
+            "phone": "5559990000",
+            "is_approved": true,
+            "institute": 1,
+            "institute_name": "Oxford Institute"
+        },
+        "enrollment_date": "2026-03-02",
+        "institute": 1,
+        "institute_name": "Oxford Institute"
+    },
+    "course_details": {
+        "id": 1,
+        "course_code": "CS101",
+        "name": "Introduction to Computer Science",
+        "description": "Updated description with more details",
+        "credits": 3,
+        "teacher": 1,
+        "institute": 1,
+        "created_at": "2026-03-02T12:00:00Z",
+        "updated_at": "2026-03-02T12:15:00Z"
+    }
+}
+More Enrollments:
+
+json
+// Enroll Bob in CS101
+{
+    "student": 2,
+    "course": 1
+}
+
+// Enroll Alice in MATH201
+{
+    "student": 1,
+    "course": 2
+}
+
+// Enroll Bob in MATH201
+{
+    "student": 2,
+    "course": 2
+}
+6.8 List Enrollments
+Endpoint: GET {{base_url}}/courses/enrollments/
+
+6.9 Filter Enrollments
+bash
+# Filter by course
+GET {{base_url}}/courses/enrollments/?course=1
+
+# Filter by student
+GET {{base_url}}/courses/enrollments/?student=1
+6.10 Remove Enrollment
+Endpoint: DELETE {{base_url}}/courses/enrollments/1/
+
+7. Exam APIs
+7.1 Create Exam
+Endpoint: POST {{base_url}}/exams/exams/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+Body (Midterm for CS101):
+
+json
+{
+    "course": 1,
+    "title": "CS101 Midterm Examination",
+    "exam_type": "midterm",
+    "total_marks": 100,
+    "pass_marks": 40,
+    "exam_date": "2026-04-15",
+    "duration_minutes": 180
+}
+Expected Response (201 Created):
+
+json
+{
+    "id": 1,
+    "course": 1,
+    "title": "CS101 Midterm Examination",
+    "exam_type": "midterm",
+    "total_marks": "100.00",
+    "pass_marks": "40.00",
+    "exam_date": "2026-04-15",
+    "duration_minutes": 180,
+    "created_at": "2026-03-02T13:00:00Z",
+    "course_details": {
+        "id": 1,
+        "course_code": "CS101",
+        "name": "Introduction to Computer Science",
+        "credits": 3,
+        "institute": 1
+    }
+}
+Postman Action: Save exam_id = 1
+
+7.2 Create More Exams
+Body (Final for CS101):
+
+json
+{
+    "course": 1,
+    "title": "CS101 Final Examination",
+    "exam_type": "final",
+    "total_marks": 100,
+    "pass_marks": 40,
+    "exam_date": "2026-06-10",
+    "duration_minutes": 180
+}
+Body (Quiz for MATH201):
+
+json
+{
+    "course": 2,
+    "title": "MATH201 Quiz 1 - Calculus",
+    "exam_type": "quiz",
+    "total_marks": 20,
+    "pass_marks": 8,
+    "exam_date": "2026-03-20",
+    "duration_minutes": 60
+}
+Body (Assignment for PHY101):
+
+json
+{
+    "course": 3,
+    "title": "PHY101 Assignment - Mechanics",
+    "exam_type": "assignment",
+    "total_marks": 50,
+    "pass_marks": 20,
+    "exam_date": "2026-03-25",
+    "duration_minutes": 0
+}
+7.3 List All Exams
+Endpoint: GET {{base_url}}/exams/exams/
+
+7.4 Filter Exams
+bash
+# Filter by exam type
+GET {{base_url}}/exams/exams/?exam_type=midterm
+
+# Filter by course
+GET {{base_url}}/exams/exams/?course=1
+
+# Filter by date
+GET {{base_url}}/exams/exams/?exam_date=2026-04-15
+
+# Search by title
+GET {{base_url}}/exams/exams/?search=midterm
+7.5 Get Exam Details
+Endpoint: GET {{base_url}}/exams/exams/1/
+
+7.6 Update Exam
+Endpoint: PUT {{base_url}}/exams/exams/1/
+
+Body:
+
+json
+{
+    "total_marks": 120,
+    "pass_marks": 50,
+    "duration_minutes": 200
+}
+8. Result APIs
+8.1 Login as Teacher
+Endpoint: POST {{base_url}}/auth/login/
+
+Body:
+
+json
+{
+    "username": "teacher_jane",
+    "password": "Teacher@123"
+}
+Postman Action: Update access_token with teacher's token
+
+8.2 Enter Results (as Teacher)
+Endpoint: POST {{base_url}}/exams/results/
+
+Headers:
+
+text
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+Body (Alice's Midterm Result):
+
+json
+{
+    "exam": 1,
+    "student": 1,
+    "marks_obtained": 85,
+    "remarks": "Good performance"
+}
+Expected Response (201 Created):
+
+json
+{
+    "id": 1,
+    "exam": 1,
+    "student": 1,
+    "marks_obtained": "85.00",
+    "grade": "B",
+    "remarks": "Good performance",
+    "entered_by": 7,
+    "entered_at": "2026-03-02T14:00:00Z",
+    "student_details": {
+        "id": 1,
+        "roll_number": "2024001",
+        "user": {
+            "id": 4,
+            "username": "student_alice",
+            "email": "alice@student.com",
+            "first_name": "Alice",
+            "last_name": "Johnson",
+            "role": "student",
+            "phone": "5559990000",
+            "is_approved": true,
+            "institute": 1,
+            "institute_name": "Oxford Institute"
+        },
+        "enrollment_date": "2026-03-02",
+        "institute": 1,
+        "institute_name": "Oxford Institute"
+    },
+    "exam_details": {
+        "id": 1,
+        "title": "CS101 Midterm Examination",
+        "exam_type": "midterm",
+        "total_marks": "100.00",
+        "exam_date": "2026-04-15",
+        "course": 1
+    }
+}
+Postman Action: Save result_id = 1
+
+8.3 Enter More Results
+Body (Bob's Midterm Result):
+
+json
+{
+    "exam": 1,
+    "student": 2,
+    "marks_obtained": 92,
+    "remarks": "Excellent performance"
+}
+Body (Alice's Quiz Result):
+
+json
+{
+    "exam": 3,
+    "student": 1,
+    "marks_obtained": 18,
+    "remarks": "Good"
+}
+8.4 Try Duplicate Result (Should Fail)
+Endpoint: POST {{base_url}}/exams/results/
+
+Body:
+
+json
+{
+    "exam": 1,
+    "student": 1,
+    "marks_obtained": 90
+}
+Expected Response (400 Bad Request):
+
+json
+{
+    "non_field_errors": [
+        "Result already exists for this student in this exam"
+    ]
+}
+8.5 Try Invalid Marks (Should Fail)
+Endpoint: POST {{base_url}}/exams/results/
+
+Body:
+
+json
+{
+    "exam": 2,
+    "student": 1,
+    "marks_obtained": 150
+}
+Expected Response (400 Bad Request):
+
+json
+{
+    "non_field_errors": [
+        "Marks obtained cannot exceed total marks"
+    ]
+}
+8.6 List All Results
+Endpoint: GET {{base_url}}/exams/results/
+
+8.7 Filter Results
+bash
+# Filter by exam
+GET {{base_url}}/exams/results/?exam=1
+
+# Filter by student
+GET {{base_url}}/exams/results/?student=1
+
+# Filter by grade
+GET {{base_url}}/exams/results/?grade=B
+8.8 Get Student's Results
+Endpoint: GET {{base_url}}/exams/students/1/results/
+
+Expected Response:
+
+json
+[
+    {
+        "id": 1,
+        "exam": 1,
+        "student": 1,
+        "marks_obtained": "85.00",
+        "grade": "B",
+        "remarks": "Good performance",
+        "entered_at": "2026-03-02T14:00:00Z",
+        "student_details": {
+            "id": 1,
+            "roll_number": "2024001",
+            "user": {
+                "id": 4,
+                "username": "student_alice",
+                "email": "alice@student.com",
+                "first_name": "Alice",
+                "last_name": "Johnson",
+                "role": "student",
+                "phone": "5559990000",
+                "is_approved": true,
+                "institute": 1,
+                "institute_name": "Oxford Institute"
+            }
+        },
+        "exam_details": {
+            "id": 3,
+            "title": "MATH201 Quiz 1 - Calculus",
+            "exam_type": "quiz",
+            "total_marks": "20.00",
+            "exam_date": "2026-03-20"
+        }
+    },
+    {
+        "id": 3,
+        "exam": 3,
+        "student": 1,
+        "marks_obtained": "18.00",
+        "grade": "A",
+        "remarks": "Good",
+        "entered_at": "2026-03-02T14:15:00Z",
+        "student_details": {
+            "id": 1,
+            "roll_number": "2024001",
+            "user": {
+                "id": 4,
+                "username": "student_alice",
+                "email": "alice@student.com",
+                "first_name": "Alice",
+                "last_name": "Johnson",
+                "role": "student",
+                "phone": "5559990000",
+                "is_approved": true,
+                "institute": 
