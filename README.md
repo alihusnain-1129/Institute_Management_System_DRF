@@ -124,7 +124,7 @@ Project follows modular structure with separate apps:
 ```
 institute_management_system/
 │
-├── accounts/        # Authentication & roles
+├── authentication/        # Authentication & roles
 ├── institutes/      # Institute registration & approval
 ├── students/        # Student management
 ├── courses/         # Course management
@@ -149,7 +149,6 @@ Each app is:
 - Django REST Framework
 - Simple JWT
 - SQLite (development)
-- PostgreSQL (production-ready support)
 - Postman for API testing
 
 ---
