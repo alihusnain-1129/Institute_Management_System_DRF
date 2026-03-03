@@ -17,23 +17,3 @@ drf-yasg
 
 # CORS (for frontend integration)
 django-cors-headers
-
-# File Processing
-PyPDF2
-pdfplumber
-python-docx
-Pillow
-pytesseract
-chardet
-
-# AI/ML and NLP
-scikit-learn
-nltk
-sentence-transformers
-transformers
-torch
-torchvision
-
-# Data Processing
-numpy
-pandas
