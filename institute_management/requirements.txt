@@ -1,0 +1,39 @@
+# Core Django
+Django
+djangorestframework
+djangorestframework-simplejwt
+
+# Database
+psycopg2-binary
+
+# Environment Variables
+python-dotenv
+
+# Filtering and Search
+django-filter
+
+# API Documentation
+drf-yasg
+
+# CORS (for frontend integration)
+django-cors-headers
+
+# File Processing
+PyPDF2
+pdfplumber
+python-docx
+Pillow
+pytesseract
+chardet
+
+# AI/ML and NLP
+scikit-learn
+nltk
+sentence-transformers
+transformers
+torch
+torchvision
+
+# Data Processing
+numpy
+pandas
